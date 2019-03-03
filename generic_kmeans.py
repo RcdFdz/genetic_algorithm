@@ -9,8 +9,11 @@ class GenericKmeans:
         self.num_centroids = num_centroids
         self.wi = w
         self.ri = r
+
         self.centroids = self.initialize_centroids()
+
         self.distances = []
+        self.chromosome_score = np.Inf
 
     def initialize_centroids(self):
         """returns k centroids from the initial points"""
@@ -26,6 +29,20 @@ class GenericKmeans:
         self.distances = self.get_distance()
         return np.argmin(self.distances, axis=1)
 
+    def get_chromosome_score(self):
+        points_closet_centroid = np.hstack([self.points, self.closest_centroid()])
+        distances = np.array(self.distances)
+        result = np.sum([np.sum(distances[np.where(points_closet_centroid[:, -1] == idx), idx]) for idx in
+                         np.unique(points_closet_centroid[:, -1]).astype(int)])
+        return result
+
+    def get_chromosome_euclidian_score(self):
+        points_closet_centroid = np.hstack([self.points, self.closest_centroid()])
+        result = np.sum([np.linalg.norm(
+            np.abs(self.centroids[idx] - points_closet_centroid[np.where(points_closet_centroid[:, -1] == idx), :-1]))
+            for idx in np.unique(points_closet_centroid[:, -1]).astype(int)])
+        return result
+
     def new_centroids(self, precision=4):
         points_closet_centroid = np.hstack([self.points, self.closest_centroid()])
         points_by_cluster = [points_closet_centroid[np.where(points_closet_centroid[:, -1] == idx), :-1]
@@ -37,4 +54,7 @@ class GenericKmeans:
             if np.round(new_centroid, precision) not in np.round(self.centroids, precision):
                 self.centroids = new_centroids
                 self.new_centroids()
+
+        self.chromosome_score = self.get_chromosome_euclidian_score()
+
         return new_centroids

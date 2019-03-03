@@ -50,8 +50,7 @@ class Chromosome:
         self.crossed_chromosome_str = ch
         self.crossed_chromosome_array = [y for x in [ch2[:param_sel], [ch1[param_sel]], ch2[param_sel+1:]] for y in x]
 
-
-    def generate_chromosomes(self):
-        choices = random.choices(range(3, 20), k=10)
+    def generate_chromosomes_sample(self):
+        choices = random.choices(range(3, 10), k=10)
         self.generate_chromosome(min(choices), max(choices))
         self.mutate_chromosome()

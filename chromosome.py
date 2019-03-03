@@ -38,31 +38,18 @@ class Chromosome:
         self.mutated_chromosome_int = int(self.mutated_chromosome_str, 2)
         return self.mutated_chromosome_int
 
-    def crossover_chromosome(self, chromosome):
-        ch1 = chromosome[:round(len(chromosome) / 2)], chromosome[round(len(chromosome) / 2):]
-        ch2 = self.chromosome_str
+    def crossover_chromosome(self, chromosome_array):
+        ch1 = chromosome_array
+        ch2 = self.chromosome_array
 
-        len_ch1 = len(ch1[0])
+        param_sel = random.choice(range(0, len(ch1)))
 
-        ms = ch1[0] + self.chromosome_str[len_ch1:]
+        ch = ''.join(ch2[:param_sel]) + ch1[param_sel] + ''.join(ch2[param_sel+1:])
 
-        for idx in range(0, round(len(ms)/2)):
-            idx = random.choices(range(0, len(ms)))[0]
-            ms = ms[:idx] + ms[idx+1:]
+        self.crossed_chromosome_int = int(ch, 2)
+        self.crossed_chromosome_str = ch
+        self.crossed_chromosome_array = [y for x in [ch2[:param_sel], [ch1[param_sel]], ch2[param_sel+1:]] for y in x]
 
-        ms_neg = ''.join([str(int(not int(i))) for i in ms])
-
-        # ch = (ch1 & Ms) | ( ch2 ∧ Ms )
-        ch_ = int(''.join(ch1), 2) & int(ms, 2)
-        ch__ = int(''.join(ch2), 2) & int(ms_neg, 2)
-        ch___ = ch_ | ch__
-        self.crossed_chromosome_str = format(ch___, '0' + str(len(ch2)) + 'b')
-        len_start = 0
-        for l_len in self.l_length:
-            self.crossed_chromosome_array.append(self.crossed_chromosome_str[len_start:len_start + l_len])
-            len_start += l_len
-
-        return self.crossed_chromosome_int
 
     def generate_chromosomes(self):
         choices = random.choices(range(3, 20), k=10)

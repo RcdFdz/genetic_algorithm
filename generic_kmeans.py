@@ -1,6 +1,6 @@
 import numpy as np
 import random
-
+import math
 
 class GenericKmeans:
 
@@ -36,11 +36,22 @@ class GenericKmeans:
                          np.unique(points_closet_centroid[:, -1]).astype(int)])
         return result
 
-    def get_chromosome_euclidian_score(self):
+    def get_chromosome_norm_euclidian_score(self):
         points_closet_centroid = np.hstack([self.points, self.closest_centroid()])
         result = np.sum([np.linalg.norm(
             np.abs(self.centroids[idx] - points_closet_centroid[np.where(points_closet_centroid[:, -1] == idx), :-1]))
             for idx in np.unique(points_closet_centroid[:, -1]).astype(int)])
+        return result
+
+    def get_chromosome_euclidian_score(self):
+        points_closet_centroid = np.hstack([self.points, self.closest_centroid()])
+        centers = []
+        for idx in points_closet_centroid[:, -1]:
+            centers.append(self.centroids[int(idx)])
+
+        points_closet_centroid_cord = np.hstack([self.points, centers])
+        result = sum(np.sqrt(np.sum((points_closet_centroid_cord[:, :2] - points_closet_centroid_cord[:, 2:]) ** 2, axis = 1)))
+        self.chromosome_score = result
         return result
 
     def new_centroids(self, precision=4):
@@ -54,7 +65,7 @@ class GenericKmeans:
             if np.round(new_centroid, precision) not in np.round(self.centroids, precision):
                 self.centroids = new_centroids
                 self.new_centroids()
+            else:
+                self.centroids = new_centroids
 
-        self.chromosome_score = self.get_chromosome_euclidian_score()
-
-        return new_centroids
+        return self.centroids

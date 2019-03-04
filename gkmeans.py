@@ -4,6 +4,7 @@ from operator import itemgetter
 from sklearn import preprocessing
 from chromosome import Chromosome as ch
 from generic_kmeans import GenericKmeans as gk
+from plotting import Plotting as pt
 
 
 class GKmeans:
@@ -51,24 +52,18 @@ class GKmeans:
         for chrom_str_array in chromosomes_candidates:
             w, r = self.get_hyperparameters(chrom_str_array)
             it = gk(self.data_scaled, 3, w, r)
-            results.append([chrom_str_array, it.new_centroids(), it.get_chromosome_score()])
+            cent = it.new_centroids()
+            score = it.get_chromosome_euclidian_score()
+
+            results.append([chrom_str_array, cent, score])
 
         sorted_candidates = sorted(results, key=itemgetter(2))
 
-        for candidate in sorted_candidates:
-            print("plt.title('Score {}')".format(candidate[-1]))
-            print("""
-plt.scatter(data_scaled[0], data_scaled[1], c=kmeans.labels_)
-centers = kmeans.cluster_centers_
-plt.scatter(centers[:, 0], centers[:, 1], c=np.unique(kmeans.labels_), s=200, alpha=0.5)
-""")
-            for x_cord, y_cord in candidate[1]:
-                print("""plt.scatter({}, {}, marker='X', s=200)""".format(x_cord, y_cord))
-            print("""
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.show()
-            """)
+        centers = [[5.55111512e-17, 6.66666667e-01], [9.00000000e-01, 9.16666667e-01], [1.00000000e-01, 8.33333333e-02]]
+        labels = [2, 2, 2, 2, 0, 0, 0, 1, 1, 1, 1]
+        pt(self.data_scaled,  centers, labels, sorted_candidates)
+
+
 dataset = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 1.0], [2.0, 2.0], [1.0, 4.0], [1.0, 5.0], [1.0, 6.0], [5.0, 6.0], [5.0, 7.0], [6.0, 6.0], [6.0, 7.0]])
 
 a = GKmeans(dataset, 3)

@@ -54,7 +54,10 @@ class GenericKmeans:
         self.chromosome_score = result
         return result
 
-    def new_centroids(self, precision=4):
+    def new_centroids(self, precision=4, iteration=0, max_iteration=2):
+        if iteration >= max_iteration:
+            return self.centroids
+
         points_closet_centroid = np.hstack([self.points, self.closest_centroid()])
         points_by_cluster = [points_closet_centroid[np.where(points_closet_centroid[:, -1] == idx), :-1]
                              for idx in np.unique(points_closet_centroid[:, -1])]
@@ -62,9 +65,9 @@ class GenericKmeans:
         new_centroids = [np.average(cluster[0], axis=0) for cluster in points_by_cluster]
 
         for new_centroid in new_centroids:
-            if np.round(new_centroid, precision) not in np.round(self.centroids, precision):
+            if (np.round(new_centroid, precision) not in np.round(self.centroids, precision)):
                 self.centroids = new_centroids
-                self.new_centroids()
+                self.new_centroids(iteration=iteration+1)
             else:
                 self.centroids = new_centroids
 

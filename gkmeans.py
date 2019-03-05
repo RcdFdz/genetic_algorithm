@@ -11,7 +11,7 @@ class GKmeans:
 
     def __init__(self, data, number_chromosomes):
         self.data = data
-        self.data_scaled = None
+        self.data_scaled = self.normalize()
 
         self.num_nc = number_chromosomes #to be set random
 
@@ -20,7 +20,7 @@ class GKmeans:
     def normalize(self):
         min_max_scaler = preprocessing.MinMaxScaler()
         data_scaled = min_max_scaler.fit_transform(self.data)
-        self.data_scaled = data_scaled
+        return data_scaled
 
     def get_hyperparameters(self, ch_str_array):
 
@@ -30,15 +30,15 @@ class GKmeans:
         ri = [(v[i]*v[-1]/sum(v[2:-1])) + v[-1] for i in range(self.d, 2*self.d)]
         return wi, ri
 
-    def run(self):
-        self.normalize()
-
+    def initialize_chromosomes(self):
         chromosomes = []
         for nc in range(0, self.num_nc):
             c = ch(self.d)
             c.generate_chromosomes_sample()
             chromosomes.append(c)
+        return chromosomes
 
+    def generate_descendence(self, chromosomes, num_candidates):
         for chrom in chromosomes:
             chrom.crossover_chromosome(random.choice([e for i, e in enumerate(chromosomes) if e != chrom]).chromosome_array)
 
@@ -58,13 +58,37 @@ class GKmeans:
             results.append([chrom_str_array, cent, score])
 
         sorted_candidates = sorted(results, key=itemgetter(2))
+        return np.array(sorted_candidates[:num_candidates])
 
-        centers = [[5.55111512e-17, 6.66666667e-01], [9.00000000e-01, 9.16666667e-01], [1.00000000e-01, 8.33333333e-02]]
-        labels = [2, 2, 2, 2, 0, 0, 0, 1, 1, 1, 1]
-        pt(self.data_scaled,  centers, labels, sorted_candidates)
+    def plotting(self, sorted_candidates, single_cluster=False):
+        pt(self.data_scaled,  sorted_candidates, single_cluster)
+
+    def run(self, max_iter=100):
+
+        candidates = self.generate_descendence(self.initialize_chromosomes(), self.num_nc)
+        self.plotting(candidates)
+
+        best_candidate = candidates[0]
+        score = min(candidates[:, -1])
+        prev_score = np.Inf
+
+        for iteration in range(0, max_iter):
+            if prev_score > score:
+                candidates = self.generate_descendence(self.initialize_chromosomes(), self.num_nc)
+                self.plotting(candidates)
+                prev_score = score
+                score = min(candidates[:, -1])
+                if prev_score > score:
+                    best_candidate = candidates[0]
+            else:
+                print('Convergence at iteration {}.\nCandidate Chromosome: {}.\nCenters at: {}.\nScore: {}'.format(
+                    iteration, best_candidate[0], best_candidate[1], best_candidate[2]
+                ))
+                self.plotting(best_candidate, single_cluster=True)
+                break
 
 
-dataset = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 1.0], [2.0, 2.0], [1.0, 4.0], [1.0, 5.0], [1.0, 6.0], [5.0, 6.0], [5.0, 7.0], [6.0, 6.0], [6.0, 7.0]])
+dataset = np.vstack([10*np.random.randn(100, 2)+10, 10*np.random.randn(100, 2)+5, 10*np.random.randn(100, 2)])
 
 a = GKmeans(dataset, 3)
 a.run()

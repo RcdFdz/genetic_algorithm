@@ -51,7 +51,7 @@ class GKmeans:
         results = []
         for chrom_str_array in chromosomes_candidates:
             w, r = self.get_hyperparameters(chrom_str_array)
-            it = gk(self.data_scaled, 3, w, r)
+            it = gk(self.data_scaled, self.num_nc, w, r)
             cent = it.new_centroids()
             score = it.get_chromosome_euclidian_score()
 
@@ -81,8 +81,8 @@ class GKmeans:
                 if prev_score > score:
                     best_candidate = candidates[0]
             else:
-                print('Convergence at iteration {}.\nCandidate Chromosome: {}.\nCenters at: {}.\nScore: {}'.format(
-                    iteration, best_candidate[0], best_candidate[1], best_candidate[2]
+                print('Convergence at iteration {}.\nCandidate Chromosome: {}.\nScore: {}\nCenters at: {}'.format(
+                    iteration, best_candidate[0], best_candidate[2],str(''.join(['\n\t' + str(x) for x in best_candidate[1]]))
                 ))
                 self.plotting(best_candidate, single_cluster=True)
                 break
@@ -91,20 +91,8 @@ class GKmeans:
         it_best = gk(self.data_scaled, 3, w, r)
         points_closet_centroid = it_best.get_points_closet_centroid(best_candidate[1])
 
-        import matplotlib.pyplot as plt
-        plt.title('Score: {}'.format(best_candidate[-1]))
-        plt.scatter(points_closet_centroid[:, 0], points_closet_centroid[:, 1], c=points_closet_centroid[:, -1])
+        pt.schema(points_closet_centroid, best_candidate[1], points_closet_centroid[:, -1], best_candidate)
 
-        _, idx = np.unique(points_closet_centroid[:, -1], return_index=True)
-        plt.scatter(np.array(best_candidate[1])[:, 0], np.array(best_candidate[1])[:, 1],
-                    c=np.unique(points_closet_centroid[np.sort(idx), -1]), s=200, alpha=0.5)
-
-        #for el in clusters[1]:
-        #    plt.scatter(el[0], el[1], marker='X', s=200)
-
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.show()
 
 dataset = np.vstack([10*np.random.randn(100, 2)+10, 10*np.random.randn(100, 2)+5, 10*np.random.randn(100, 2)])
 

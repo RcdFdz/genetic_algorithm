@@ -55,13 +55,12 @@ class GenericKmeans:
         return result
 
     def get_points_closet_centroid(self, centroids):
+        self.distances = [np.sum(np.multiply(self.wi, np.power(abs(np.subtract(centroids, v)), self.ri)), axis=1)
+                          for i, v in enumerate(np.matrix(self.points))]
 
-        # REDO
-        closet_centorid = np.argmin(self.distances,
-                                    [np.sum(np.multiply(self.wi, np.power(abs(np.subtract(centroids, v)), self.ri)), axis=1)
-                                     for i, v in enumerate(np.matrix(self.points))], axis=1)
+        min_distance = np.argmin(self.distances, axis=1)
 
-        points_closet_centroid = np.hstack([self.points, closet_centorid ])
+        points_closet_centroid = np.hstack([self.points, min_distance])
         return points_closet_centroid
 
     def new_centroids(self, precision=4, iteration=0, max_iteration=2):
@@ -75,7 +74,7 @@ class GenericKmeans:
         new_centroids = [np.average(cluster[0], axis=0) for cluster in points_by_cluster]
 
         for new_centroid in new_centroids:
-            if (np.round(new_centroid, precision) not in np.round(self.centroids, precision)):
+            if np.round(new_centroid, precision) not in np.round(self.centroids, precision):
                 self.centroids = new_centroids
                 self.new_centroids(iteration=iteration+1)
             else:

@@ -1,6 +1,6 @@
 import numpy as np
 import random
-import math
+
 
 class GenericKmeans:
 
@@ -53,6 +53,16 @@ class GenericKmeans:
         result = sum(np.sqrt(np.sum((points_closet_centroid_cord[:, :2] - points_closet_centroid_cord[:, 2:]) ** 2, axis = 1)))
         self.chromosome_score = result
         return result
+
+    def get_points_closet_centroid(self, centroids):
+
+        # REDO
+        closet_centorid = np.argmin(self.distances,
+                                    [np.sum(np.multiply(self.wi, np.power(abs(np.subtract(centroids, v)), self.ri)), axis=1)
+                                     for i, v in enumerate(np.matrix(self.points))], axis=1)
+
+        points_closet_centroid = np.hstack([self.points, closet_centorid ])
+        return points_closet_centroid
 
     def new_centroids(self, precision=4, iteration=0, max_iteration=2):
         if iteration >= max_iteration:
